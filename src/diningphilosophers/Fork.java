@@ -1,33 +1,18 @@
 package diningphilosophers;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Fork {
+public class Fork extends ReentrantLock {
 
-	public static final int NOT_TAKEN = -1;
+	private static final long serialVersionUID = 1L;
 	
-	private AtomicInteger status; 
 	private int id;
 	
 	public Fork(int id) {
-		status = new AtomicInteger(NOT_TAKEN);
-		this.setId(id);
-	}
-
-	public AtomicInteger getStatus() {
-		return status;
-	}
-
-	public void setStatus(AtomicInteger status) {
-		this.status = status;
+		this.id = id;
 	}
 
 	public int getId() {
 		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-	
+	}	
 }

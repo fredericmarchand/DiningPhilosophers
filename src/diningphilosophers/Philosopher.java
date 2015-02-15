@@ -1,20 +1,13 @@
 package diningphilosophers;
 
 public class Philosopher implements Runnable {
-
-	public static final int THINKING = 0;
-	public static final int EATING = 1;
-	public static final int GETTING_FORKS = 2;
 	
+	@SuppressWarnings("unused")
 	private int id;
 	private String name;
 	private int eatingTimeMilliseconds;
-	@SuppressWarnings("unused")
 	private Fork leftFork;
-	@SuppressWarnings("unused")
-	private Fork rightFork;
-	private int state;
-	
+	private Fork rightFork;	
 	
 	private int eatingCount;
 	private double timeSpentEating;
@@ -24,7 +17,6 @@ public class Philosopher implements Runnable {
 		this.setEatingTimeMilliseconds(eatingTimeMilliseconds);
 		leftFork = left;
 		rightFork = right;
-		state = THINKING;
 		setEatingCount(0);
 		setTimeSpentEating(0.0);
 	}
@@ -45,58 +37,55 @@ public class Philosopher implements Runnable {
 		this.eatingTimeMilliseconds = eatingTimeMilliseconds;
 	}
 	
-	public void acquireFork(Fork fork) {
-		for (;;) {
-			if (fork.getStatus().get() == Fork.NOT_TAKEN) {
-				fork.getStatus().set(id);
-				return;
-			}
-			else {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+	public void acquireForks() throws InterruptedException {
+		 while(true) {
+	            // Acquire locks
+	            
+	            boolean gotLeftFork = false;
+	            boolean gotRightLock = false;
+	            
+	            try {
+	            	gotLeftFork = leftFork.tryLock();
+	            	gotRightLock = rightFork.tryLock();
+	            }
+	            finally {
+	                if(gotLeftFork && gotRightLock) {
+	                    return;
+	                }
+	                
+	                if(gotLeftFork) {
+	                	leftFork.unlock();
+	                }
+	                
+	                if(gotRightLock) {
+	                	rightFork.unlock();
+	                }
+	            }
+	            
+	            // Locks not acquired
+	            Thread.sleep(1);
+	        }
 	}
 	
-	public void releaseFork(Fork fork) {
-		fork.getStatus().set(Fork.NOT_TAKEN);
+	public void releaseForks() {
+		leftFork.unlock();
+        rightFork.unlock();
 	}
-
+	
 	@Override
-	public void run() {
-		for (;;) {
-			if (state == THINKING) {
-				state = GETTING_FORKS;
-			}
-			else {
-				if () {
-					acquireFork(leftFork);
-					acquireFork(rightFork);
-					eatingCount++;
-					try {
-						Thread.sleep(eatingTimeMilliseconds);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					releaseFork(leftFork);
-					releaseFork(rightFork);
-					state = THINKING;
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				else {
-					try {
-						Thread.sleep(eatingTimeMilliseconds);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
+	public void run() {		
+		for (int i = 0; i < 5; ++i) {
+			try {
+				acquireForks(); //Get forks
+				System.out.println(name + " is eating");
+				eatingCount++;
+				timeSpentEating += eatingTimeMilliseconds;
+				Thread.sleep(eatingTimeMilliseconds); //eat 
+				releaseForks();
+				System.out.println(name + " is thinking");
+				Thread.sleep(eatingTimeMilliseconds); //think 
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
