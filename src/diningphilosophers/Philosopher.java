@@ -42,14 +42,14 @@ public class Philosopher implements Runnable {
 	            // Acquire locks
 	            
 	            boolean gotLeftFork = false;
-	            boolean gotRightLock = false;
+	            boolean gotRightFork = false;
 	            
 	            try {
 	            	gotLeftFork = leftFork.tryLock();
-	            	gotRightLock = rightFork.tryLock();
+	            	gotRightFork = rightFork.tryLock();
 	            }
 	            finally {
-	                if(gotLeftFork && gotRightLock) {
+	                if(gotLeftFork && gotRightFork) {
 	                    return;
 	                }
 	                
@@ -57,7 +57,7 @@ public class Philosopher implements Runnable {
 	                	leftFork.unlock();
 	                }
 	                
-	                if(gotRightLock) {
+	                if(gotRightFork) {
 	                	rightFork.unlock();
 	                }
 	            }
@@ -74,7 +74,7 @@ public class Philosopher implements Runnable {
 	
 	@Override
 	public void run() {		
-		for (int i = 0; i < 5; ++i) {
+		for (int i = 0; i < 20; ++i) {
 			try {
 				acquireForks(); //Get forks
 				System.out.println(name + " is eating");
