@@ -1,5 +1,7 @@
 package diningphilosophers;
 
+import java.util.Date;
+
 public class Philosopher implements Runnable {
 	
 	@SuppressWarnings("unused")
@@ -11,14 +13,16 @@ public class Philosopher implements Runnable {
 	
 	private int eatingCount;
 	private double timeSpentEating;
+	private long thinkingTime;
 	
-	public Philosopher(int id, String name, int eatingTimeMilliseconds, Fork left, Fork right) {
+	public Philosopher(int d, String name, int eatingTimeMilliseconds, Fork left, Fork right) {
 		this.setName(name);
 		this.setEatingTimeMilliseconds(eatingTimeMilliseconds);
 		leftFork = left;
 		rightFork = right;
 		setEatingCount(0);
 		setTimeSpentEating(0.0);
+		thinkingTime = 0;
 	}
 
 	public String getName() {
@@ -73,17 +77,27 @@ public class Philosopher implements Runnable {
 	}
 	
 	@Override
-	public void run() {		
-		for (int i = 0; i < 20; ++i) {
+	public void run() {	
+		Date date = null;
+		long time1 = 0;
+		long time2 = 0;
+		
+		for (;!App.end;) {
 			try {
 				acquireForks(); //Get forks
+				date = new Date();
+				time1 = date.getTime();
+				if (time2 == 0) time1 = 0;
+				thinkingTime += (time1 - time2);
 				System.out.println(name + " is eating");
 				eatingCount++;
 				timeSpentEating += eatingTimeMilliseconds;
 				Thread.sleep(eatingTimeMilliseconds); //eat 
 				releaseForks();
+				date = new Date();
+				time2 = date.getTime();
 				System.out.println(name + " is thinking");
-				Thread.sleep(eatingTimeMilliseconds); //think 
+				Thread.sleep(1); //think 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -102,6 +116,10 @@ public class Philosopher implements Runnable {
 		return timeSpentEating;
 	}
 
+	public long getThinkingTime() {
+		return thinkingTime;
+	}
+	
 	public void setTimeSpentEating(double timeSpentEating) {
 		this.timeSpentEating = timeSpentEating;
 	}
